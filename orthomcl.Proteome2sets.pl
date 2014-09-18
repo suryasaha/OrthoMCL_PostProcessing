@@ -66,7 +66,7 @@ are mandatory (see below).
    --relparam  <.txt>    Text file with protein clusters from OrthoMCL run with most relaxed parameters (required)
    --faa       <.faa>    Concatenated FAA file of proteins from all genomes. Make sure its in the current directory (required)
    --map       <.txt>)   Tab delimited file with abbreviations followed by full genome names used in Refseq (required)
-   --desc      <.xls>    Tab delimited file with descriptions of proteins in each group for each genome
+   --desc      <.xls>    OUTPUT tab delimited file with descriptions of proteins in each group for each genome
       
 =head1 AUTHOR
 
