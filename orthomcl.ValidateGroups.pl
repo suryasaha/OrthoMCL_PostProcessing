@@ -10,11 +10,11 @@ use POSIX;
 
 =head1 NAME
 
- orthomcl.CompareGroups.pl - compare a group set with two other sets, one relaxed param and one stringent param 
+ orthomcl.ValidateGroups.pl - compare a group set with two other sets, one relaxed param and one stringent param 
 
 =head1 SYNOPSIS
 
-  % orthomcl.CompareGroups.pl --selgroups groups.txt --consparam groups.txt --relparam groups.txt --map map.txt --names names.txt
+  % orthomcl.ValidateGroups.pl --selgroups groups.txt --consparam groups.txt --relparam groups.txt --map map.txt --names names.txt
   
 =head1 DESCRIPTION
 
