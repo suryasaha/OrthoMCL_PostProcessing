@@ -1,0 +1,8 @@
+smeliloti	Sinorhizobium meliloti 1021
+rleguminosarum	Rhizobium leguminosarum bv. viciae 3841
+retli	Rhizobium etli CFN 42
+atumefaciens	Agrobacterium tumefaciens str. C58
+smedicae	Sinorhizobium medicae WSM419
+avitis	Agrobacterium vitis S4
+rngr234	Rhizobium sp. NGR234
+rlegtriwsm1325	Rhizobium leguminosarum bv. trifolii WSM1325
