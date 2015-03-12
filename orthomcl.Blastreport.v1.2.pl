@@ -276,6 +276,6 @@ foreach $i (@temp){ print MXLS "$i\n";}
 close(XLS);
 close(MXLS);
 
-print STDERR "\n\n$src_annot_ctr $src proteins had hits (above and below threshold). $src_unannot_ctr had no hits\n";
+print STDERR "\n\n$src_annot_ctr $src proteins had hits (above and below $cutoff threshold). $src_unannot_ctr had no hits to OrthoMCL clusters\n";
 
 exit;
