@@ -1,4 +1,4 @@
-### OrthoMCL ###
+### OrthoMCL validation pipeline ###
 ========
 
 This repository contains scripts for working with OrthoMCL clustering results. 
