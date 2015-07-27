@@ -10,3 +10,6 @@ Please see Jones et al. 2015 for an example of how this pipeline can be used.
 http://apsjournals.apsnet.org/doi/abs/10.1094/PDIS-08-14-0833-RE
 
 Please create an issue or contact suryasaha at cornell dot edu if you have any questions. Thanks!
+
+Here is an example workflow, warts and all
+https://gist.github.com/suryasaha/949741ec6b541bf6f1ce
