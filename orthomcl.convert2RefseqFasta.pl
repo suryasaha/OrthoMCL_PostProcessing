@@ -73,7 +73,7 @@ while ($rec=<FAS>){
 #		$idx{$temp[$#temp-2]}=$seed;
 #		print OFAS "\>gi\|$seed\|RAST\|XXX\| ";
 		@temp=split(/\|/,$rec);#splitting on |
-		print OFAS "\>gi\|$seed\|"; 
+		print OFAS "\>gi\|$seed\|i5k|"; 
 		$seed++;
 #		for $i (2..($#temp-3)){ $temp[$i]=~ s/\://g; print OFAS $temp[$i],' ';}
 		$temp[0] =~ s/^>//;
