@@ -35,6 +35,10 @@ use POSIX;
                 OUTPUT: .XLS and group files (common,80+,60+,40+ conserved clusters) 
              
 =head1 TODO
+
+=head1 NOTE
+ 
+ Make sure that all gi numbers are unique in the Fasta headers. If you use orthomcl.convert2RefseqFasta.pl to format the fasta headers, then make sure you use a seed value higher than existing values.
  
 =head1 COMMAND-LINE OPTIONS
 
