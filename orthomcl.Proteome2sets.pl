@@ -55,7 +55,9 @@ use List::Compare;
 
 =head1 TODO
 
- 
+=head1 NOTE
+Make sure that all gi numbers are unique in the Fasta headers. If you use orthomcl.convert2RefseqFasta.pl to format the fasta headers, then make sure you use a seed value higher than existing values.
+
 =head1 COMMAND-LINE OPTIONS
 
  Command-line options can be abbreviated to single-letter options, e.g. -f instead of --file. Some options
