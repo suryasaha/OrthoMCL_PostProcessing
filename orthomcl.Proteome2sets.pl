@@ -43,9 +43,11 @@ use List::Compare;
  Reads in groups file produced by OrthoMCL. Outputs protein sets for the core genome (present in all 
  genomes), shared but not core (present in some but not all genomes), and lineage specific (present 
  in only one genome). Use 'cat *.faa > allgenomes.faa' to get all the proteins into a single 
- file. Put all abbreviations and full genome names in a tab delimited text file. Verifies core 
- by requiring a core cluster to have 1 rep in the cluster from all strains under relaxed params 
- and 75%+ genomes under strict params.
+ file. Put all abbreviations and full genome names in a tab delimited text file. 
+ 
+ Verifies core by requiring a core cluster to have 1 rep in the group/cluster from all strains/genomes 
+ under relaxed params and 75%+ of genomes under strict params. You might want to total the count 
+ columns in the XLS.
 
 =head1 VERSION HISTORY
 
