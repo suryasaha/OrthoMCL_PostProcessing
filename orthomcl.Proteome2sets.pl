@@ -67,7 +67,10 @@ use List::Compare;
 =head1 TODO
 
 =head1 NOTE
-Make sure that all gi numbers are unique in the Fasta headers. If you use orthomcl.convert2RefseqFasta.pl to format the fasta headers, then make sure you use a seed value higher than existing values.
+
+ Make sure your protein FAA files are in Refseq format
+ Example: >gi|16262454|ref|NP_435247.1| FdoG formate dehydrogenase-O alpha subunit [Sinorhizobium meliloti 1021]
+ Make sure that all gi numbers are unique in the Fasta headers. If you use orthomcl.convert2RefseqFasta.pl to format the fasta headers, then make sure you use a seed value higher than existing values.
 
 =head1 COMMAND-LINE OPTIONS
 
@@ -182,7 +185,7 @@ while ($i = $infaa->next_seq()) {
 	#>gi|16262454|ref|NP_435247.1| FdoG formate dehydrogenase-O alpha subunit [Sinorhizobium meliloti 1021]
 	@temp=split(/\|/,$i->id());
 	$j=$i->desc();
-	$j=~ s/[\s\S]+\[//;
+	$j=~ s/[\s\S]*\[//;
 	$j=~ s/\]$//;
 	if (!exists $name2abbv{$j}){ print STDERR "\n\n$j not found in \%name2abbv\n\n"; exit 1;}
 	my $gi = $temp[1];

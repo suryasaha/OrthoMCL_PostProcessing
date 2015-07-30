@@ -22,6 +22,9 @@ usage() {
 EOF
 }
 
+printf "Make sure your protein FAA files are in Refseq format\nExample: >gi|16262454|ref|NP_435247.1| FdoG formate dehydrogenase-O alpha subunit [Sinorhizobium meliloti 1021]\nUse orthomcl.convert2RefseqFasta.pl for formatting.\n"
+
+
 if [ "$#" -ne 2 ]
 then
 	usage
