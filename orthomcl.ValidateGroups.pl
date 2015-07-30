@@ -156,6 +156,8 @@ while($rec=<INNAMES>){
 	@temp=split(/\|/,$rec);
 	chomp $temp[4];
 	$i="$temp[1]\t$temp[3]\t$temp[4]";
+	my $gi = $temp[1];
+	die "Protein with GI number $gi already exists\n" if exists $annot{$temp[1]};
 	$annot{$temp[1]}=$i;
 }
 close (INNAMES);

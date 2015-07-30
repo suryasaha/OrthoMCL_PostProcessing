@@ -183,7 +183,9 @@ while ($i = $infaa->next_seq()) {
 	$j=~ s/[\s\S]+\[//;
 	$j=~ s/\]$//;
 	if (!exists $name2abbv{$j}){ print STDERR "\n\n$j not found in \%name2abbv\n\n"; exit 1;}
-	$allprots{"$name2abbv{$j}\|$temp[1]"}='l';#mark all as lineage specific to start with
+	my $gi = $temp[1];
+	die "Protein with GI number $gi already exists\n" if exists $allprots{"$name2abbv{$j}\|$gi"};
+	$allprots{"$name2abbv{$j}\|$gi"}='l';#mark all as lineage specific to start with
 }
 $infaa->close();
 
