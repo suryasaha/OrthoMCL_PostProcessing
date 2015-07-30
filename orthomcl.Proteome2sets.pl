@@ -4,8 +4,17 @@
 
 use strict;
 use warnings;
-use lib '/home/surya/bin/modules';
-use SS;
+
+my $locallib = eval{
+			require local::lib;
+			local::lib->import();
+			1;
+		};
+if ($locallib){
+	use local::lib;
+}
+
+
 use Getopt::Long;
 use POSIX;
 use Cwd;
@@ -95,6 +104,13 @@ sub mk_key{
 sub mk_id {
 	if ($_[0] =~ /^>gi\|(\d+)/) {return $1;}
 	else {return;}
+}
+
+sub mk_dir{
+my ($name,$i);
+$name=$_[0]; $i=localtime();
+if (-e $name){rename $name,"${name}_$i"; unlink glob "${name}_/* $(name}/.*";rmdir ($name);}
+mkdir ($name, 0755) or warn "Cannot make $name directory: $!\n";
 }
 
 my ($i,$sgrp,$cgrp,$rgrp,$faa,$desc,$map);
@@ -272,8 +288,8 @@ $infaa->close();
 $outfaa->close();
 
 #write out cluster FAA files with labels for individual proteins
-SS::mk_dir('core_class');
-SS::mk_dir('shared_class');
+&mk_dir('core_class');
+&mk_dir('shared_class');
 
 # making DB of the fasta file
 my ($db,$cwd);  

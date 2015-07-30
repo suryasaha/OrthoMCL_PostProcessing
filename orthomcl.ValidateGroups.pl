@@ -4,6 +4,17 @@
 
 use strict;
 use warnings;
+
+my $locallib = eval{
+			require local::lib;
+			local::lib->import();
+			1;
+		};
+if ($locallib){
+	use local::lib;
+}
+
+
 use Getopt::Long;
 use List::Compare;
 use POSIX;
