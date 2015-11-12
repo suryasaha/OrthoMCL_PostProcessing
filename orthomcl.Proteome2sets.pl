@@ -17,18 +17,20 @@ if ($locallib){
 
 use Getopt::Long;
 use POSIX;
-use Cwd;
+Use Cwd;
 eval {
 	require Bio::DB::Fasta;
 	require Bio::SeqIO;
 	require Switch;
 	require List::Compare;
+	require Scalar::Util;
 };
 
 use Bio::SeqIO;
 use Bio::DB::Fasta;
 use Switch;
 use List::Compare;
+use Scalar::Util qw(looks_like_number);
 
 =head1 NAME
 
@@ -60,11 +62,10 @@ use List::Compare;
 =head1 NOTES
  Produces errors for getcwd() and line 282 since warnings are enabled. Redirect errors to error file or 
  null device (2>Err or 2>/dev/null)
-	 Subroutine main::getcwd redefined at /usr/share/perl/5.10/Exporter.pm line 67.
-	 at ./orthomcl.Proteome2sets.pl line 11
-	 Use of uninitialized value $\ in regexp compilation at ./orthomcl.Proteome2sets.pl line 282.
+	 Possible precedence issue with control flow operator at /usr/local/share/perl/5.20.2/Bio/DB/IndexedBase.pm line 791.
 
 =head1 TODO
+See github issues https://github.com/suryasaha/OrthoMCL_PostProcessing/issues
 
 =head1 NOTE
 
@@ -91,20 +92,49 @@ are mandatory (see below).
 =cut
 
 sub mk_key{
-	my (@temp,@temp1,@temp2,$i,$key);
-	@temp=split(' ',$_[0]);
-	@temp2=();
-	for $i (1..(scalar(@temp)-1)){
-		@temp1=split(/\|/,$temp[$i]);#can be shortened skipping temp arrays
-		push @temp2,$temp1[1];#record GIs
+	my (@group_arr,@prot_arr,@gi_arr,@gi_sorted_arr,$i,$key);
+	@group_arr=split(' ',$_[0]);
+	@gi_arr=();
+	for $i (1..(scalar(@group_arr)-1)){
+		@prot_arr=split(/\|/,$group_arr[$i]);#can be shortened skipping temp arrays
+		push @gi_arr,$prot_arr[1];#record GIs
 	}
-	@temp = sort {$a <=> $b} @temp2;
-	foreach $i (@temp){#make key of sorted GIs
+	@gi_sorted_arr = sort {$a <=> $b} @gi_arr;
+	foreach $i (@gi_sorted_arr){#make key of sorted GIs
 		if(!defined($key)){$key=$i;}
 		else{$key=$key.'_'.$i;}
 	}
 	return $key;
 }
+
+sub validate_protein_gi_number{
+	my (@group_arr,@prot_arr,@gi_arr,$i);
+	my $err_string = 0;
+	@group_arr=split(' ',$_[0]);
+	@gi_arr=();
+	for $i (1..(scalar(@group_arr)-1)){
+		@prot_arr=split(/\|/,$group_arr[$i]);#can be shortened skipping temp arrays
+		if ( !(looks_like_number($prot_arr[1])) ) { 
+			$err_string = "$prot_arr[1] is not a valid GI number";
+			last;
+		}
+	}
+	return $err_string;
+}
+
+sub validate_refseq_format{
+	my $fasta_header = shift;
+	my @fasta_header_arr = split(/\|/,$fasta_header);
+	my $err_string = 0;
+	if ( scalar @fasta_header_arr < 5 ) { $err_string = "less than 5 values";}
+	if ( scalar @fasta_header_arr > 5 ) { $err_string = "more than 5 values";}
+	if ( $fasta_header_arr[0] ne '>gi' ) { $err_string = "first value is not GI";}
+	if ( !(looks_like_number($fasta_header_arr[1])) ) { $err_string = "$fasta_header_arr[1] is not a valid GI number";}
+	if ( ($fasta_header_arr[4] !~ /\[/) || ($fasta_header_arr[4] !~ /\]/)   ) { $err_string = "genome name not present or not enclosed by []";}
+	
+	return $err_string;
+}
+
 
 sub mk_id {
 	if ($_[0] =~ /^>gi\|(\d+)/) {return $1;}
@@ -155,14 +185,42 @@ unless(open(DESC,">$desc")){print "not able to open $desc\n";exit 1;}
 $ctr=0;
 while($rec=<INSGRP>){
 	if($rec =~ /#/){next;}
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
 	push @groups, [split(' ',$rec)]; $ctr++;
 }
 close (INSGRP);
 
-while($rec=<INCGRP>){$cgrp_data{&mk_key($rec)}=$rec;}
+while($rec=<INCGRP>){
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
+	$cgrp_data{&mk_key($rec)}=$rec;
+}
 close(INCGRP);
 
-while($rec=<INRGRP>){$rgrp_data{&mk_key($rec)}=$rec;}
+while($rec=<INRGRP>){
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
+	$rgrp_data{&mk_key($rec)}=$rec;
+}
 close(INRGRP);
 
 print DESC "Selected clusters file:\t$sgrp\t",$ctr,"\n";
@@ -183,7 +241,16 @@ $infaa = Bio::SeqIO->new('-file' => "<$faa",'-format' => 'fasta' );
 #init prot hash with entire pan-proteome
 while ($i = $infaa->next_seq()) {
 	#>gi|16262454|ref|NP_435247.1| FdoG formate dehydrogenase-O alpha subunit [Sinorhizobium meliloti 1021]
-	@temp=split(/\|/,$i->id());
+	my $name = $i->id();
+	my $err_string = validate_refseq_format($name);
+	if ($err_string) {
+		chomp $name;
+		print STDERR "$name is not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
+	@temp=split(/\|/,$name);
 	$j=$i->desc();
 	$j=~ s/[\s\S]*\[//;
 	$j=~ s/\]$//;
@@ -307,7 +374,7 @@ $cwd=getcwd();
 foreach $i (@groups){
 	#LAS_subclade2467: retli|86358613 smeliloti|15966232 rleguminosarum|116250056
 	#LAS_subclade2595: retli|86360090 retli|86361198
-	$i->[0]=~ s/$\://;
+	$i->[0]=~ s/://;
 	if($allprots{$i->[1]}=~ /c/){#core class{c,cp,uc,ucp}, if first is core class, then rest will be the same
 		unless(open(TEMP,">${cwd}\/core_class\/$i->[0]\.faa")){print "not able to open ${cwd}\/core_class\/$i->[0]\.faa\n\n";exit 1;}
 		for $j (1..(scalar (@$i)-1)){#for each member
