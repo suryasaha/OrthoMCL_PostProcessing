@@ -4,6 +4,7 @@
 
 use strict;
 use warnings;
+use Scalar::Util qw(looks_like_number);
 
 my $locallib = eval{
 			require local::lib;
@@ -39,6 +40,7 @@ use POSIX;
  
  Use 'cat *.faa| fgrep '>' > names.txt' to get all the protein names into a single file. This tool 
  only works for Refseq style FASTA headers.
+ >gi|16262454|ref|NP_435247.1| FdoG formate dehydrogenase-O alpha subunit [Sinorhizobium meliloti 1021]
 
 =head1 VERSION HISTORY
 
@@ -70,19 +72,47 @@ are mandatory (see below).
 =cut
 
 sub mk_key{
-	my (@temp,@temp1,@temp2,$i,$key);
-	@temp=split(' ',$_[0]);
-	@temp2=();
-	for $i (1..(scalar(@temp)-1)){
-		@temp1=split(/\|/,$temp[$i]);#can be shortened skipping temp arrays
-		push @temp2,$temp1[1];#record GIs
+	my (@group_arr,@prot_arr,@gi_arr,@gi_sorted_arr,$i,$key);
+	@group_arr=split(' ',$_[0]);
+	@gi_arr=();
+	for $i (1..(scalar(@group_arr)-1)){
+		@prot_arr=split(/\|/,$group_arr[$i]);#can be shortened skipping temp arrays
+		push @gi_arr,$prot_arr[1];#record GIs
 	}
-	@temp = sort {$a <=> $b} @temp2;
-	foreach $i (@temp){#make key of sorted GIs
+	@gi_sorted_arr = sort {$a <=> $b} @gi_arr;
+	foreach $i (@gi_sorted_arr){#make key of sorted GIs
 		if(!defined($key)){$key=$i;}
 		else{$key=$key.'_'.$i;}
 	}
 	return $key;
+}
+
+sub validate_protein_gi_number{
+	my (@group_arr,@prot_arr,@gi_arr,$i);
+	my $err_string = 0;
+	@group_arr=split(' ',$_[0]);
+	@gi_arr=();
+	for $i (1..(scalar(@group_arr)-1)){
+		@prot_arr=split(/\|/,$group_arr[$i]);#can be shortened skipping temp arrays
+		if ( !(looks_like_number($prot_arr[1])) ) { 
+			$err_string = "$prot_arr[1] is not a valid GI number";
+			last;
+		}
+	}
+	return $err_string;
+}
+
+sub validate_refseq_format{
+	my $fasta_header = shift;
+	my @fasta_header_arr = split(/\|/,$fasta_header);
+	my $err_string = 0;
+	if ( scalar @fasta_header_arr < 5 ) { $err_string = "less than 5 values";}
+	if ( scalar @fasta_header_arr > 5 ) { $err_string = "more than 5 values";}
+	if ( $fasta_header_arr[0] ne '>gi' ) { $err_string = "first value is not GI";}
+	if ( !(looks_like_number($fasta_header_arr[1])) ) { $err_string = "$fasta_header_arr[1] is not a valid GI number";}
+	if ( ($fasta_header_arr[4] !~ /\[/) || ($fasta_header_arr[4] !~ /\]/)   ) { $err_string = "genome name not present or not enclosed by []";}
+	
+	return $err_string;
 }
 
 
@@ -130,15 +160,45 @@ unless(open(OUTC40G,">Validated_clusters_40.txt")){print "not able to open Valid
 
 # read in files
 #LAS_subclade1001: retli|86356474 retli|86361060 retli|86356879 retli|86356911 rleguminosarum|116249307 
-while($rec=<INSGRP>){$sgrp_data{&mk_key($rec)}=$rec;}
+while($rec=<INSGRP>){
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
+	$sgrp_data{&mk_key($rec)}=$rec;
+}
 close(INSGRP);
 print STDERR scalar(keys %sgrp_data)," records read from $sgrp ..\n";
 
-while($rec=<INCGRP>){$cgrp_data{&mk_key($rec)}=$rec;}
+while($rec=<INCGRP>){
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
+	$cgrp_data{&mk_key($rec)}=$rec;
+}
 close(INCGRP);
 print STDERR scalar(keys %cgrp_data)," records read from $cgrp ..\n";
 
-while($rec=<INRGRP>){$rgrp_data{&mk_key($rec)}=$rec;}
+while($rec=<INRGRP>){
+	my $err_string = validate_protein_gi_number($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec proteins are not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}	
+	$rgrp_data{&mk_key($rec)}=$rec;
+}
 close(INRGRP);
 print STDERR scalar(keys %rgrp_data)," records read from $rgrp .. \n";
 
@@ -154,6 +214,14 @@ close (INMAP);
 
 while($rec=<INNAMES>){
 	if($rec =~ /#/){next;}
+	my $err_string = validate_refseq_format($rec);
+	if ($err_string) {
+		chomp $rec;
+		print STDERR "$rec is not in refseq format\n";
+		print STDERR "$err_string\n";
+		print STDERR "Exiting....\n";
+		exit 1;
+	}
 	@temp=split(/\|/,$rec);
 	chomp $temp[4];
 	$i="$temp[1]\t$temp[3]\t$temp[4]";
