@@ -8,15 +8,15 @@ use Getopt::Long;
 
 =head1 NAME
 
- orthomcl.convert2Refseq.pl - Convert protein fasta and GFF files to Refseq like format for OrthomclAdjustFasta
+ orthomcl.convert2RefseqFasta.pl - Convert protein fasta to Refseq like format for OrthomclAdjustFasta
 
 =head1 SYNOPSIS
 
-  % orthomcl.convert2Refseq.pl --fas file.fas --seed 100
+  % orthomcl.convert2RefseqFasta.pl --fas file.fas --seed 100
   
 =head1 DESCRIPTION
 
- Reads in Fasta file produced by ACT or Artemis. Formats the sequence headers to look like Refseq headers.
+ Reads in Fasta file produced by i5k. Formats the sequence headers to look like Refseq headers.
  
 =head1 VERSION HISTORY
  Version   1.0  INPUT : Fasta 
@@ -56,26 +56,17 @@ unless(open(OFAS,">formatted\.$fas")){print "not able to open formatted\.$fas\n\
 #Seq names
 #>CDS CDS FIG01208100: hypothetical protein 108:221 reverse MW:4035
 #>CDS CDS hypothetical protein 205:348 forward MW:5087
-#>CDS CDS Enoyl-[acyl-carrier-protein] reductase [NADH] (EC 1.3.1.9) 419:1195 reverse MW:28221
-#>CDS CDS hypothetical protein 1521:1745 forward MW:8931
-#>CDS CDS hypothetical protein 1802:2002 forward MW:7831
-#>CDS CDS FIG01207832: hypothetical protein 2445:3341 reverse MW:33233
-#
+#>CLEC000001-RA
+#>CLEC000002-RA
+
 #>gi|190570479|ref|YP_001974837.1| chromosomal replication initiator protein DnaA [Wolbachia endosymbiont of Culex quinquefasciatus Pel]
 #>gi|190570480|ref|YP_001974838.1| protein-export membrane protein SecF [Wolbachia endosymbiont of Culex quinquefasciatus Pel]
 
 while ($rec=<FAS>){
 	if($rec=~ /^>/){
-#		$rec=~ s/^>//;
-#		$rec=~ s/^>CDS CDS //;
-#		@temp=split(' ',$rec);#splitting on space
-#		#taking third last element
-#		$idx{$temp[$#temp-2]}=$seed;
-#		print OFAS "\>gi\|$seed\|RAST\|XXX\| ";
 		@temp=split(/\|/,$rec);#splitting on |
 		print OFAS "\>gi\|$seed\|i5k|"; 
 		$seed++;
-#		for $i (2..($#temp-3)){ $temp[$i]=~ s/\://g; print OFAS $temp[$i],' ';}
 		$temp[0] =~ s/^>//;
 		chomp $temp[1];
 		print OFAS $temp[0].'|';
