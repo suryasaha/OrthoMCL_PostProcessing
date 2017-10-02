@@ -8,8 +8,6 @@ set -o errexit
 
 readonly PROGNAME=$(basename $0)
 readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARGS="$@"
-readonly WDIR=`pwd`
 
 usage() {
   cat << EOF
